@@ -4,6 +4,7 @@ import {
   exchangeNpssoForCode,
   getTitleTrophies,
   getUserTitles,
+  getProfileFromUserName,
   getUserTrophiesEarnedForTitle,
   makeUniversalSearch,
   TrophyRarity
@@ -50,7 +51,40 @@ const rarityMap: Record<TrophyRarity, string> = {
 };
 
 
+
 const FetchUserProfile = async (username: string) => {
+
+  // 1. Authenticate and become authorized with PSN.
+  const accessCode = await exchangeNpssoForCode(NPSSO);
+  const authorization = await exchangeCodeForAccessToken(accessCode);
+
+  const profile = getProfileFromUserName(authorization, username);
+
+  return profile
+};
+
+
+const FetchUserGames = async (username: string) => {
+
+  // 1. Authenticate and become authorized with PSN.
+  const accessCode = await exchangeNpssoForCode(NPSSO);
+  const authorization = await exchangeCodeForAccessToken(accessCode);
+
+  const allAccountsSearchResults = await makeUniversalSearch(
+    authorization,
+    username,
+    "SocialAllAccounts"
+  );
+
+  const targetAccountId = allAccountsSearchResults.domainResponses[0].results[0].socialMetadata.accountId;
+
+  const { trophyTitles } = await getUserTitles(authorization, targetAccountId);
+
+  return trophyTitles
+
+};
+
+const FetchUserTrophies = async (username: string) => {
 
   // 1. Authenticate and become authorized with PSN.
   const accessCode = await exchangeNpssoForCode(NPSSO);
@@ -110,5 +144,7 @@ const FetchUserProfile = async (username: string) => {
 }
 
 export {
-  FetchUserProfile
+  FetchUserProfile,
+  FetchUserGames,
+  FetchUserTrophies
 };

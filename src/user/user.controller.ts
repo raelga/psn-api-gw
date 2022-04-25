@@ -14,10 +14,25 @@ router.get('/', async (ctx: Koa.Context) => {
 });
 
 router.get('/:user_id', async (ctx: Koa.Context) => {
-  const user_profile = await PSN
+  const response = await PSN
     .FetchUserProfile(ctx.params.user_id)
 
-  ctx.body = user_profile;
+  ctx.body = response;
+});
+
+
+router.get('/:user_id/games', async (ctx: Koa.Context) => {
+  const response = await PSN
+    .FetchUserGames(ctx.params.user_id)
+
+  ctx.body = response;
+});
+
+router.get('/:user_id/trophies', async (ctx: Koa.Context) => {
+  const response = await PSN
+    .FetchUserTrophies(ctx.params.user_id)
+
+  ctx.body = response;
 });
 
 export default router;
