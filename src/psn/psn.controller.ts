@@ -1,4 +1,4 @@
-import type { Trophy } from "psn-api";
+import { getTitleTrophyGroups, Trophy } from "psn-api";
 import {
   exchangeCodeForAccessToken,
   exchangeNpssoForCode,
@@ -9,6 +9,8 @@ import {
   makeUniversalSearch,
   TrophyRarity
 } from "psn-api";
+
+const DEFAULT_LANGUAGE: string = String(process.env.PSN_NPSSO) || "en-us";
 
 const NPSSO: string = String(process.env.PSN_NPSSO);
 
@@ -143,8 +145,71 @@ const FetchUserTrophies = async (username: string) => {
   return games;
 }
 
+const getNpServiceName = async (game: string): Promise<"trophy" | "trophy2"> => {
+  // 1. Authenticate and become authorized with PSN.
+  const accessCode = await exchangeNpssoForCode(NPSSO);
+  const authorization = await exchangeCodeForAccessToken(accessCode);
+  try {
+    const titleTrophyGroups = await getTitleTrophyGroups(
+      authorization,
+      game,
+      {
+        npServiceName: "trophy",
+      }
+    );
+  } catch (error) {
+    return "trophy2"
+  }
+  return "trophy"
+}
+
+const FetchGameTrophyGroups = async (game: string, lang: string = DEFAULT_LANGUAGE) => {
+  // 1. Authenticate and become authorized with PSN.
+  const accessCode = await exchangeNpssoForCode(NPSSO);
+  const authorization = await exchangeCodeForAccessToken(accessCode);
+
+  const titleTrophyGroups = await getTitleTrophyGroups(
+    authorization,
+    game,
+    {
+      npServiceName: await getNpServiceName(game),
+      headerOverrides: {
+        "Accept-Language": lang
+      }
+    }
+  );
+
+  return titleTrophyGroups
+
+}
+
+
+const FetchGameTrophies = async (game: string, lang: string = DEFAULT_LANGUAGE) => {
+
+  // 1. Authenticate and become authorized with PSN.
+  const accessCode = await exchangeNpssoForCode(NPSSO);
+  const authorization = await exchangeCodeForAccessToken(accessCode);
+
+  const titleTrophies = await getTitleTrophies(
+    authorization,
+    game,
+    "all",
+    {
+      npServiceName: await getNpServiceName(game),
+      headerOverrides: {
+        "Accept-Language": lang
+      }
+    }
+  );
+
+  return titleTrophies;
+}
+
+
 export {
   FetchUserProfile,
   FetchUserGames,
-  FetchUserTrophies
+  FetchUserTrophies,
+  FetchGameTrophies,
+  FetchGameTrophyGroups
 };

@@ -2,6 +2,7 @@ import * as Koa from 'koa';
 import * as HttpStatus from 'http-status-codes';
 import healthzController from '../healthz/healthz.controller';
 import userController from '../user/user.controller';
+import gameController from '../game/game.controller';
 
 const app: Koa = new Koa();
 
@@ -26,6 +27,8 @@ app.use(healthzController.routes());
 app.use(healthzController.allowedMethods());
 app.use(userController.routes());
 app.use(userController.allowedMethods());
+app.use(gameController.routes());
+app.use(gameController.allowedMethods());
 
 // Application error logging.
 app.on('error', console.error);
